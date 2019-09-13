@@ -9,4 +9,4 @@ This repository contains the code for detecting aggresion in Greek.
 | Attention LSTM     |           |       |        |
 | Attention LSTM GRU |           |       |        |
 | Attention Capsule  |           |       |        |
-| BERT               |           |       |        |
+| BERT               |  0.7346   | 0.7403| 0.7374 |
