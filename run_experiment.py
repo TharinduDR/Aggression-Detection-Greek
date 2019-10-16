@@ -1,4 +1,5 @@
 import configparser
+import csv
 
 import numpy as np
 import pandas as pd
@@ -8,12 +9,12 @@ from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
 from numpy.random import seed
-from sklearn.metrics import confusion_matrix, f1_score, accuracy_score, recall_score, precision_score
+from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import set_random_seed
 
-from algo.nn.models import capsule
+from algo.nn.models import attention_capsule
 from algo.nn.utility import f1_smart
 from embeddings import get_emb_matrix
 from preprocessing import clean_text, remove_names, normalize
@@ -22,7 +23,8 @@ from preprocessing import clean_text, remove_names, normalize
 def run_keras_experiments():
     print('Reading files')
 
-    full = pd.read_csv("data/OGDT.csv", sep=',', header=None, names=['Index', 'ID', 'Tweet', 'Label'])
+    full = pd.read_csv("data/OGDT.csv", sep=',', index_col=0)
+    full = full.sample(frac=1).reset_index(drop=True)
     train, test = train_test_split(full, test_size=0.2)
 
     train = train.reset_index(drop=True)
@@ -111,7 +113,7 @@ def run_keras_experiments():
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.6, patience=1, min_lr=0.0001, verbose=2)
         earlystopping = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=2, verbose=2, mode='auto')
         callbacks = [checkpoint, reduce_lr]
-        model = capsule(maxlen, max_features, embed_size, embedding_matrix)
+        model = attention_capsule(maxlen, max_features, embed_size, embedding_matrix)
         if i == 0: print(model.summary())
         model.fit(X_train, Y_train, batch_size=64, epochs=20, validation_data=(X_val, Y_val), verbose=2,
                   callbacks=callbacks,
@@ -132,7 +134,8 @@ def run_keras_experiments():
 
     # save predictions
     file_path = PREDICTION_FILE
-    test.to_csv(file_path, sep='\t', encoding='utf-8', header=['ID', 'Tweet', 'Label', 'Prediction'], index=False)
+    test.to_csv(file_path, sep='\t', encoding='utf-8', header=['ID', 'Tweet', 'Label', 'Prediction'],
+                quoting=csv.QUOTE_NONE, index=False)
 
     print('Saved Predictions')
 
@@ -156,8 +159,8 @@ def run_pytorch_experiments():
     print('Reading files')
 
     # Reading File Section - This should change
-    full = pd.read_csv("data/OGDT.csv", sep=',', header=None, names=['Index', 'ID', 'Tweet', 'Label'])
-
+    full = pd.read_csv("data/OGDT.csv", sep=',', index_col=0)
+    full = full.sample(frac=1).reset_index(drop=True)
     train, test = train_test_split(full, test_size=0.2)
 
     print('Completed reading')

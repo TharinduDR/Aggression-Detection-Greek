@@ -1,4 +1,4 @@
 [model-config]
-EMBEDDING_FILE = /data/fasttext/cc.el.300.vec
-MODEL_PATH = models/pooled_gru_weights_best.h5
-PREDICTION_FILE = predictions/pooled_gru.csv
+EMBEDDING_FILE = /data/fasttext/grcorpus_def.vec
+MODEL_PATH = models/attention_capsule_weights_best.h5
+PREDICTION_FILE = predictions/attention_capsule.csv
